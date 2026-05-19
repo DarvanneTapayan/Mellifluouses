@@ -7,7 +7,7 @@ import { Instagram, Twitter, Linkedin, Youtube, ArrowUp } from 'lucide-react';
 import { useFirebase } from '../lib/FirebaseProvider';
 
 export default function Footer() {
-  const { user, projects, testimonials } = useFirebase();
+  const { user, projects, testimonials, errorMessage } = useFirebase();
   const isAdmin = user?.email === 'darvanne.tapayan@gmail.com';
 
   const scrollToTop = () => {
@@ -15,8 +15,13 @@ export default function Footer() {
   };
 
   return (
-    <footer className="py-20 px-6 border-t border-white/5">
+    <footer className="py-20 px-6 border-t border-white/5 relative">
       <div className="max-w-7xl mx-auto">
+        {errorMessage && (
+          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-mono">
+            Error: {errorMessage}
+          </div>
+        )}
         <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-20">
           <div className="max-w-sm">
             <div className="flex items-center gap-2 mb-6">
@@ -55,7 +60,7 @@ export default function Footer() {
             <p className="text-white/20 text-sm italic">
               © 2026 Mellifluouses. All rights reserved. Built with passion and AI.
             </p>
-            {isAdmin && (
+            {(isAdmin || errorMessage) && (
               <p className="text-[10px] text-royal-purple/40 mt-2">
                 DB Status: {projects.length} Projects, {testimonials.length} Testimonials Loaded
               </p>

@@ -41,6 +41,8 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
 
   const isAdmin = user?.email === 'darvanne.tapayan@gmail.com';
 
+  const [debugMsg, setDebugMsg] = useState('');
+
   const fetchDriveFiles = async () => {
     const token = getAccessToken();
     if (!token) {
@@ -90,9 +92,11 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
         createdAt: serverTimestamp()
       });
       setTitle(''); setDesc(''); setThumb(''); setVideo('');
+      setDebugMsg("Last action: Project added successfully!");
       alert("Project added successfully!");
     } catch (err: any) {
       console.error(err);
+      setDebugMsg("Error adding project: " + err.message);
       alert("Failed to add project: " + err.message);
     }
   };
@@ -109,9 +113,11 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
         createdAt: serverTimestamp()
       });
       setTName(''); setTRole(''); setTContent(''); setTAvatar('');
+      setDebugMsg("Last action: Testimonial added successfully!");
       alert("Testimonial added successfully!");
     } catch (err: any) {
       console.error(err);
+      setDebugMsg("Error adding testimony: " + err.message);
       alert("Failed to add testimonial: " + err.message);
     }
   };
@@ -119,7 +125,12 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
   const handleDelete = async (coll: string, id: string) => {
     if (!isAdmin) return;
     if (!window.confirm("Sure about this?")) return;
-    await deleteDoc(doc(db, coll, id));
+    try {
+      await deleteDoc(doc(db, coll, id));
+      setDebugMsg(`Last action: Deleted from ${coll}`);
+    } catch (err: any) {
+      setDebugMsg(`Error deleting: ${err.message}`);
+    }
   };
 
   if (!user) {
@@ -186,6 +197,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
           >
             <MessageSquare className="w-5 h-5" /> Testimonials
           </button>
+          {debugMsg && <span className="flex-1 text-xs text-royal-purple/60 italic self-center truncate ml-4">{debugMsg}</span>}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">

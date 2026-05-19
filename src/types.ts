@@ -10,6 +10,7 @@ export interface VideoProject {
   thumbnail: string;
   videoUrl: string;
   category: 'Cinematic' | 'Experimental' | 'Product';
+  createdAt?: any;
 }
 
 export interface Testimony {
@@ -18,4 +19,5 @@ export interface Testimony {
   role: string;
   content: string;
   avatar: string;
+  createdAt?: any;
 }

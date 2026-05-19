@@ -18,16 +18,16 @@ service cloud.firestore {
 
     function isValidProject(data) {
       return data.keys().hasAll(['title', 'thumbnail', 'videoUrl', 'category']) &&
-             data.title is string && data.title.size() <= 100 &&
-             data.thumbnail is string && data.thumbnail.size() <= 500 &&
-             data.videoUrl is string && data.videoUrl.size() <= 500 &&
+             data.title is string && data.title.size() <= 500 &&
+             data.thumbnail is string && data.thumbnail.size() <= 2000 &&
+             data.videoUrl is string && data.videoUrl.size() <= 2000 &&
              data.category in ['Cinematic', 'Experimental', 'Product'];
     }
 
     function isValidTestimony(data) {
       return data.keys().hasAll(['name', 'content']) &&
-             data.name is string && data.name.size() <= 100 &&
-             data.content is string && data.content.size() <= 1000;
+             data.name is string && data.name.size() <= 500 &&
+             data.content is string && data.content.size() <= 2000;
     }
 
     // Projects collection

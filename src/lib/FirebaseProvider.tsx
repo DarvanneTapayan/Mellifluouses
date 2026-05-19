@@ -16,6 +16,7 @@ interface FirebaseContextType {
   testimonialsLoading: boolean;
   projects: VideoProject[];
   testimonials: Testimony[];
+  errorMessage: string | null;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
@@ -27,6 +28,7 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [testimonialsLoading, setTestimonialsLoading] = useState(true);
   const [projects, setProjects] = useState<VideoProject[]>([]);
   const [testimonials, setTestimonials] = useState<Testimony[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
@@ -51,8 +53,10 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       setProjects(projectsData as VideoProject[]);
       setProjectsLoading(false);
+      setErrorMessage(null);
     }, (error) => {
       console.error("Projects loading error:", error);
+      setErrorMessage(`Projects: ${error.message}`);
       setProjectsLoading(false);
     });
 
@@ -73,8 +77,10 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       setTestimonials(testimonialsData as Testimony[]);
       setTestimonialsLoading(false);
+      setErrorMessage(null);
     }, (error) => {
       console.error("Testimonials loading error:", error);
+      setErrorMessage(`Testimonials: ${error.message}`);
       setTestimonialsLoading(false);
     });
 
@@ -92,7 +98,8 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       projectsLoading, 
       testimonialsLoading, 
       projects, 
-      testimonials 
+      testimonials,
+      errorMessage
     }}>
       {children}
     </FirebaseContext.Provider>
