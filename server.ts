@@ -20,12 +20,15 @@ async function startServer() {
 
   // Health check
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", gemini_configured: !!process.env.GEMINI_API_KEY });
+    res.json({ 
+      status: "ok", 
+      gemini_configured: !!(process.env.AI_ASSISTANT || process.env.GEMINI_API_KEY) 
+    });
   });
 
   // Gemini Setup
   const ai = new GoogleGenAI({ 
-    apiKey: process.env.GEMINI_API_KEY || "",
+    apiKey: process.env.AI_ASSISTANT || process.env.GEMINI_API_KEY || "",
     httpOptions: {
       headers: {
         'User-Agent': 'aistudio-build',
@@ -41,8 +44,8 @@ async function startServer() {
         return res.status(400).json({ error: "Prompt is required" });
       }
 
-      if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: "GEMINI_API_KEY is missing in environment variables." });
+      if (!process.env.AI_ASSISTANT && !process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: "AI Assistant or Gemini API Key is not configured. Please add AI_ASSISTANT in Settings > Secrets." });
       }
 
       const fullPrompt = `Based on this explanation of a video project: "${prompt}", generate a short, catchy Title and a concise, engaging Description (max 150 characters).`;
