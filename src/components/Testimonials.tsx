@@ -9,8 +9,8 @@ import { TESTIMONIALS } from '../constants';
 import { useFirebase } from '../lib/FirebaseProvider';
 
 export default function Testimonials() {
-  const { testimonials: dbTestimonials } = useFirebase();
-  const items = dbTestimonials.length > 0 ? dbTestimonials : TESTIMONIALS;
+  const { testimonials: dbTestimonials, testimonialsLoading } = useFirebase();
+  const items = testimonialsLoading ? [] : (dbTestimonials.length > 0 ? dbTestimonials : TESTIMONIALS);
 
   return (
     <section id="testimonials" className="py-24 px-6 bg-obsidian relative overflow-hidden">
@@ -23,9 +23,16 @@ export default function Testimonials() {
           <p className="text-white/50 text-lg max-w-xl mx-auto">Some kind words from the awesome people I've had the chance to work with.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {items.map((testimony, index) => (
-            <motion.div
+        {testimonialsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-64 rounded-[32px] glass animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {items.map((testimony, index) => (
+              <motion.div
               key={testimony.id}
               initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -53,6 +60,7 @@ export default function Testimonials() {
             </motion.div>
           ))}
         </div>
+      )}
       </div>
     </section>
   );

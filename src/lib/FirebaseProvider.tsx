@@ -12,6 +12,8 @@ import { VideoProject, Testimony } from '../types';
 interface FirebaseContextType {
   user: User | null;
   loading: boolean;
+  projectsLoading: boolean;
+  testimonialsLoading: boolean;
   projects: VideoProject[];
   testimonials: Testimony[];
 }
@@ -20,14 +22,16 @@ const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined
 
 export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [testimonialsLoading, setTestimonialsLoading] = useState(true);
   const [projects, setProjects] = useState<VideoProject[]>([]);
   const [testimonials, setTestimonials] = useState<Testimony[]>([]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
+      setAuthLoading(false);
     });
 
     // Real-time projects
@@ -38,6 +42,10 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...doc.data()
       })) as VideoProject[];
       setProjects(projectsData);
+      setProjectsLoading(false);
+    }, (error) => {
+      console.error("Projects loading error:", error);
+      setProjectsLoading(false);
     });
 
     // Real-time testimonials
@@ -48,6 +56,10 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...doc.data()
       })) as Testimony[];
       setTestimonials(testimonialsData);
+      setTestimonialsLoading(false);
+    }, (error) => {
+      console.error("Testimonials loading error:", error);
+      setTestimonialsLoading(false);
     });
 
     return () => {
@@ -58,7 +70,14 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   return (
-    <FirebaseContext.Provider value={{ user, loading, projects, testimonials }}>
+    <FirebaseContext.Provider value={{ 
+      user, 
+      loading: authLoading, 
+      projectsLoading, 
+      testimonialsLoading, 
+      projects, 
+      testimonials 
+    }}>
       {children}
     </FirebaseContext.Provider>
   );

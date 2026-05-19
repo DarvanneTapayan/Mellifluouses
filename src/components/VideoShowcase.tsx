@@ -9,10 +9,10 @@ import { VIDEO_PROJECTS } from '../constants';
 import { useFirebase } from '../lib/FirebaseProvider';
 
 export default function VideoShowcase() {
-  const { projects: dbProjects } = useFirebase();
+  const { projects: dbProjects, projectsLoading } = useFirebase();
   
-  // Use DB projects if they exist, otherwise fallback to constants
-  const items = dbProjects.length > 0 ? dbProjects : VIDEO_PROJECTS;
+  // Only show dummy data if we are NOT loading AND the database is actually empty
+  const items = projectsLoading ? [] : (dbProjects.length > 0 ? dbProjects : VIDEO_PROJECTS);
 
   return (
     <section id="works" className="py-24 px-6 relative">
@@ -28,9 +28,16 @@ export default function VideoShowcase() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {items.map((project, index) => (
-            <motion.div
+        {projectsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="aspect-4/3 rounded-3xl glass animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {items.map((project, index) => (
+              <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -74,6 +81,7 @@ export default function VideoShowcase() {
             </motion.div>
           ))}
         </div>
+      )}
       </div>
     </section>
   );
