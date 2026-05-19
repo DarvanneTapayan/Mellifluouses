@@ -14,7 +14,7 @@ async function startServer() {
 
   // Gemini Setup
   const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
+    apiKey: process.env.GEMINI_API_KEY || "",
     httpOptions: {
       headers: {
         'User-Agent': 'aistudio-build',
@@ -31,14 +31,14 @@ async function startServer() {
       }
 
       if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: "Gemini API Key is not configured. Go to Settings > Secrets in AI Studio and add GEMINI_API_KEY." });
+        return res.status(500).json({ error: "Gemini API Key is not configured. Please add GEMINI_API_KEY in Settings > Secrets." });
       }
 
       const fullPrompt = `Based on this explanation of a video project: "${prompt}", generate a short, catchy Title and a concise, engaging Description (max 150 characters).`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: fullPrompt,
+        model: "gemini-flash-latest",
+        contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -53,13 +53,21 @@ async function startServer() {
       });
 
       const text = response.text;
-      if (!text) throw new Error("No response from AI");
+      if (!text) {
+        throw new Error("Empty response from Gemini API");
+      }
       
       res.json(JSON.parse(text));
     } catch (error: any) {
       console.error("Gemini Error:", error);
-      res.status(500).json({ error: error.message });
+      // Return a structured JSON even on error
+      res.status(500).json({ error: error.message || "Failed to generate content" });
     }
+  });
+
+  // Health check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", gemini_configured: !!process.env.GEMINI_API_KEY });
   });
 
   // Vite middleware for development

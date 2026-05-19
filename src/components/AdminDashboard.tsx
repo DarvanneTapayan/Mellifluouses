@@ -185,21 +185,51 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
   const handleAIGenerate = async () => {
     if (!aiPrompt) return alert("Write a brief explanation first!");
     setIsGenerating(true);
+    setDebugMsg("Checking AI availability...");
     try {
+      // First check health
+      const healthRes = await fetch('/api/health');
+      const healthData = await healthRes.json();
+      if (!healthData.gemini_configured) {
+        throw new Error("Gemini API key is missing. Please add GEMINI_API_KEY in the Secrets menu.");
+      }
+
+      setDebugMsg("Generating content with Gemini...");
       const response = await fetch('/api/generate-project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: aiPrompt })
       });
+      
+      const contentType = response.headers.get('content-type');
+      if (!response.ok) {
+        let errorMsg = "Server error";
+        if (contentType && contentType.includes('application/json')) {
+          const errData = await response.json();
+          errorMsg = errData.error || errorMsg;
+        } else {
+          const text = await response.text();
+          errorMsg = `Server returned ${response.status}: ${text.substring(0, 50)}...`;
+        }
+        throw new Error(errorMsg);
+      }
+
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Unexpected response format: ${text.substring(0, 50)}...`);
+      }
+
       const data = await response.json();
       if (data.title && data.description) {
         setTitle(data.title);
         setDesc(data.description);
         setDebugMsg("AI suggestions applied!");
       } else {
-        throw new Error(data.error || "Failed to generate content");
+        throw new Error("AI returned an empty response. Try a different prompt.");
       }
     } catch (err: any) {
+      console.error("AI Generation processing failed:", err);
+      setDebugMsg(`AI Error: ${err.message}`);
       alert("AI Generation failed: " + err.message);
     } finally {
       setIsGenerating(false);
