@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+
+  --color-midnight: #050505;
+  --color-obsidian: #0A0A0A;
+  --color-royal-purple: #7C3AED;
+  --color-electric-purple: #A855F7;
+  
+  --shadow-purple: 0 10px 30px -10px rgba(124, 58, 237, 0.3);
+}
+
+@layer base {
+  body {
+    @apply bg-midnight text-white selection:bg-royal-purple selection:text-white;
+    font-feature-settings: "cv02", "cv03", "cv04";
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-linear-to-r from-white via-royal-purple to-electric-purple;
+  }
+
+  .purple-glow {
+    box-shadow: 0 0 50px -10px rgba(124, 58, 237, 0.5);
+  }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');

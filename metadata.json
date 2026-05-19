@@ -1,0 +1,6 @@
+{
+  "name": "Mellifluouses",
+  "description": "Personal AI video portfolio showcasing my latest cinematic experiments and visual tests.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
