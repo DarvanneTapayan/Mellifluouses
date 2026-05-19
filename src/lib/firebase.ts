@@ -39,8 +39,13 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   return JSON.stringify(errInfo);
 }
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+const app = initializeApp({
+  ...firebaseConfig,
+  databaseURL: "https://ai-studio-applet-webapp-251b2-default-rtdb.asia-southeast1.firebasedatabase.app"
+});
+
+// Use the explicit firestore database ID from the config
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || "(default)");
 export const rtdb = getDatabase(app);
 export const auth = getAuth(app);
 

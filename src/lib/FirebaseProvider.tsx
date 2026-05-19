@@ -5,8 +5,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { ref, onValue, off } from 'firebase/database';
-import { auth, rtdb, handleFirestoreError, OperationType } from './firebase';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { auth, db, handleFirestoreError, OperationType } from './firebase';
 import { VideoProject, Testimony } from '../types';
 
 interface FirebaseContextType {
@@ -36,58 +36,44 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setAuthLoading(false);
     });
 
-    // Real-time projects from RTDB
-    const projectsRef = ref(rtdb, 'projects');
-    const onProjectsValue = onValue(projectsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const projectsData = Object.entries(data).map(([id, val]: [string, any]) => ({
-          id,
-          ...val
-        })) as VideoProject[];
-        
-        // Sort locally by createdAt desc
-        projectsData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-        setProjects(projectsData);
-      } else {
-        setProjects([]);
-      }
+    // Real-time projects from Firestore
+    const projectsQuery = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
+    const unsubscribeProjects = onSnapshot(projectsQuery, (snapshot) => {
+      const projectsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as VideoProject[];
+      
+      setProjects(projectsData);
       setProjectsLoading(false);
       setErrorMessage(null);
     }, (error) => {
-      console.error("Projects loading error (RTDB):", error);
-      setErrorMessage(`Projects: ${error.message}`);
+      console.error("Projects loading error (Firestore):", error);
+      setErrorMessage(handleFirestoreError(error, OperationType.LIST, 'projects'));
       setProjectsLoading(false);
     });
 
-    // Real-time testimonials from RTDB
-    const testimonialsRef = ref(rtdb, 'testimonials');
-    const onTestimonialsValue = onValue(testimonialsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const testimonialsData = Object.entries(data).map(([id, val]: [string, any]) => ({
-          id,
-          ...val
-        })) as Testimony[];
+    // Real-time testimonials from Firestore
+    const testimonialsQuery = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
+    const unsubscribeTestimonials = onSnapshot(testimonialsQuery, (snapshot) => {
+      const testimonialsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Testimony[];
 
-        // Sort locally
-        testimonialsData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-        setTestimonials(testimonialsData);
-      } else {
-        setTestimonials([]);
-      }
+      setTestimonials(testimonialsData);
       setTestimonialsLoading(false);
       setErrorMessage(null);
     }, (error) => {
-      console.error("Testimonials loading error (RTDB):", error);
-      setErrorMessage(`Testimonials: ${error.message}`);
+      console.error("Testimonials loading error (Firestore):", error);
+      setErrorMessage(handleFirestoreError(error, OperationType.LIST, 'testimonials'));
       setTestimonialsLoading(false);
     });
 
     return () => {
       unsubscribeAuth();
-      off(projectsRef, 'value', onProjectsValue);
-      off(testimonialsRef, 'value', onTestimonialsValue);
+      unsubscribeProjects();
+      unsubscribeTestimonials();
     };
   }, []);
 
