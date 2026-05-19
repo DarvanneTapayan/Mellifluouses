@@ -22,7 +22,7 @@ export default function Footer() {
               <span className="font-display font-bold text-2xl tracking-tighter uppercase">Mellifluouses</span>
             </div>
             <p className="text-white/40 leading-relaxed">
-              Just a human and his machines making cool stuff. Exploring the intersection of pure creativity and AI.
+              I'm Darvanne Al-fatth Tapayan. Just a human making cool stuff with machines. Exploring the intersection of pure creativity and AI.
             </p>
           </div>
 

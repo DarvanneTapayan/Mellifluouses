@@ -37,8 +37,8 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.1 }}
           className="font-display text-5xl md:text-8xl font-bold leading-tight mb-8"
         >
-          MAKING MAGIC WITH <br />
-          <span className="text-gradient">PIXELS & AI</span>
+          HI, I AM <br />
+          <span className="text-gradient">DARVANNE TAPAYAN</span>
         </motion.h1>
 
         <motion.p
@@ -47,7 +47,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          Just me, some neural networks, and a lot of late nights. I build hyper-realistic AI videos and cinematic visuals that look like they shouldn't exist.
+          I'm just a guy who loves playing with AI to create weirdly beautiful videos and visuals. Welcome to my personal corner of the internet.
         </motion.p>
 
         <motion.div
