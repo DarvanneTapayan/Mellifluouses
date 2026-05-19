@@ -5,15 +5,28 @@
 
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Plus, Trash2, LogIn, LogOut, Video, MessageSquare, X } from 'lucide-react';
+import { Plus, Trash2, LogIn, LogOut, Video, MessageSquare, X, HardDrive, RefreshCcw } from 'lucide-react';
 import { useFirebase } from '../lib/FirebaseProvider';
-import { signIn, signOut, db } from '../lib/firebase';
+import { signIn, signOutUser, db, getAccessToken } from '../lib/firebase';
 import { collection, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+
+interface DriveFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  thumbnailLink?: string;
+  webViewLink?: string;
+}
 
 export default function AdminDashboard({ onClose }: { onClose: () => void }) {
   const { user, projects, testimonials } = useFirebase();
   const [activeTab, setActiveTab] = useState<'projects' | 'testimonials'>('projects');
   
+  // Drive selection state
+  const [isDriveLoading, setIsDriveLoading] = useState(false);
+  const [driveFiles, setDriveFiles] = useState<DriveFile[]>([]);
+  const [showDrivePicker, setShowDrivePicker] = useState(false);
+
   // Form States
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
@@ -27,6 +40,42 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
   const [tAvatar, setTAvatar] = useState('');
 
   const isAdmin = user?.email === 'darvanne.tapayan@gmail.com';
+
+  const fetchDriveFiles = async () => {
+    const token = getAccessToken();
+    if (!token) {
+      alert("No access token found. Trying to re-auth...");
+      await signIn();
+      return;
+    }
+    
+    setIsDriveLoading(true);
+    try {
+      // Query for videos
+      const query = "mimeType contains 'video/' and trashed = false";
+      const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,mimeType,thumbnailLink,webViewLink)&pageSize=20`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.files) {
+        setDriveFiles(data.files);
+        setShowDrivePicker(true);
+      }
+    } catch (err) {
+      console.error("Error fetching drive files:", err);
+    } finally {
+      setIsDriveLoading(false);
+    }
+  };
+
+  const selectDriveFile = (file: DriveFile) => {
+    // Convert to preview link for embedding
+    const embedUrl = `https://drive.google.com/file/d/${file.id}/preview`;
+    setVideo(embedUrl);
+    if (!title) setTitle(file.name.replace(/\.[^/.]+$/, "")); // Remove extension for title
+    if (file.thumbnailLink) setThumb(file.thumbnailLink.replace(/=s[0-9]+$/, "=s1200")); // Get higher res thumbnail
+    setShowDrivePicker(false);
+  };
 
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +114,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
 
   const handleDelete = async (coll: string, id: string) => {
     if (!isAdmin) return;
+    if (!window.confirm("Sure about this?")) return;
     await deleteDoc(doc(db, coll, id));
   };
 
@@ -92,8 +142,8 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
       <div className="fixed inset-0 z-[100] glass flex items-center justify-center p-6 text-center">
         <div className="bg-midnight p-12 rounded-[40px] border border-white/10 max-w-md">
           <p className="text-xl font-bold mb-4">Access Denied</p>
-          <p className="text-white/50 mb-8">This dashboard is strictly for Darvanne.</p>
-          <button onClick={signOut} className="text-royal-purple font-bold">Sign Out</button>
+          <p className="text-white/50 mb-8">This dashboard is strictly for Darvanne (found user: {user.email}).</p>
+          <button onClick={signOutUser} className="text-royal-purple font-bold">Sign Out</button>
         </div>
       </div>
     );
@@ -112,7 +162,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
           </div>
           <div className="flex gap-4">
             <button onClick={onClose} className="glass p-3 rounded-xl hover:bg-white/10"><X /></button>
-            <button onClick={signOut} className="glass p-3 rounded-xl hover:bg-red-500/20 text-red-400 group flex items-center gap-2">
+            <button onClick={signOutUser} className="glass p-3 rounded-xl hover:bg-red-500/20 text-red-400 group flex items-center gap-2">
               <LogOut className="w-5 h-5" />
               <span className="hidden md:inline font-bold">Log Out</span>
             </button>
@@ -136,17 +186,30 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Form Side */}
-          <section className="glass p-8 rounded-[32px]">
+          <section className="glass p-8 rounded-[32px] relative">
             <h2 className="text-2xl font-display font-bold mb-8">
               {activeTab === 'projects' ? 'Add New Project' : 'Add New Testimonial'}
             </h2>
             
             {activeTab === 'projects' ? (
               <form onSubmit={handleAddProject} className="space-y-6">
+                <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/10">
+                  <span className="text-sm font-bold text-white/40 uppercase">G-Drive Integration</span>
+                  <button 
+                    type="button"
+                    onClick={fetchDriveFiles}
+                    disabled={isDriveLoading}
+                    className="flex items-center gap-2 text-royal-purple hover:text-electric-purple font-bold text-sm transition-colors"
+                  >
+                    {isDriveLoading ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <HardDrive className="w-4 h-4" />}
+                    Browse my Drive
+                  </button>
+                </div>
+
                 <input required placeholder="Project Title" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:border-royal-purple outline-none" value={title} onChange={e => setTitle(e.target.value)} />
                 <textarea required placeholder="Description" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:border-royal-purple outline-none h-32" value={desc} onChange={e => setDesc(e.target.value)} />
                 <input required placeholder="Thumbnail URL" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:border-royal-purple outline-none" value={thumb} onChange={e => setThumb(e.target.value)} />
-                <input required placeholder="Video URL (YouTube/Vimeo/Direct)" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:border-royal-purple outline-none" value={video} onChange={e => setVideo(e.target.value)} />
+                <input required placeholder="Video URL (Drive Link)" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:border-royal-purple outline-none" value={video} onChange={e => setVideo(e.target.value)} />
                 <select className="w-full bg-midnight border border-white/10 p-4 rounded-xl outline-none" value={cat} onChange={e => setCat(e.target.value as any)}>
                   <option value="Cinematic">Cinematic</option>
                   <option value="Experimental">Experimental</option>
@@ -162,6 +225,36 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
                 <input placeholder="Avatar URL (optional)" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:border-royal-purple outline-none" value={tAvatar} onChange={e => setTAvatar(e.target.value)} />
                 <button className="w-full bg-royal-purple py-4 rounded-xl font-bold hover:bg-electric-purple transition-all">Add Testimony</button>
               </form>
+            )}
+
+            {/* Drive File Picker Modal-ish */}
+            {showDrivePicker && (
+              <div className="absolute inset-0 bg-midnight/95 rounded-[32px] p-8 z-20 flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold">Select Video from Drive</h3>
+                  <button onClick={() => setShowDrivePicker(false)} className="opacity-50 hover:opacity-100"><X /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                  {driveFiles.map(file => (
+                    <button 
+                      key={file.id}
+                      onClick={() => selectDriveFile(file)}
+                      className="w-full flex items-center gap-4 bg-white/5 p-3 rounded-xl hover:bg-royal-purple/20 transition-all text-left"
+                    >
+                      {file.thumbnailLink ? (
+                        <img src={file.thumbnailLink} className="w-12 h-12 rounded object-cover" />
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-white/10 flex items-center justify-center"><Video className="w-6 h-6 opacity-20" /></div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold truncate text-sm">{file.name}</p>
+                        <p className="text-[10px] opacity-40 uppercase">{file.mimeType.split('/')[1]}</p>
+                      </div>
+                    </button>
+                  ))}
+                  {driveFiles.length === 0 && <p className="text-center opacity-30 mt-10">No videos found in your Drive.</p>}
+                </div>
+              </div>
             )}
           </section>
 
