@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -31,16 +31,24 @@ async function startServer() {
       }
 
       if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: "Gemini API Key is not configured." });
+        return res.status(500).json({ error: "Gemini API Key is not configured. Go to Settings > Secrets in AI Studio and add GEMINI_API_KEY." });
       }
 
-      const fullPrompt = `Based on this explanation of a video project: "${prompt}", generate a short, catchy Title and a concise, engaging Description (max 150 characters). Respond ONLY with a JSON object like this: {"title": "The Title", "description": "The Description"}`;
+      const fullPrompt = `Based on this explanation of a video project: "${prompt}", generate a short, catchy Title and a concise, engaging Description (max 150 characters).`;
 
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: fullPrompt,
         config: {
-          responseMimeType: "application/json"
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              title: { type: Type.STRING },
+              description: { type: Type.STRING }
+            },
+            required: ["title", "description"]
+          }
         }
       });
 
