@@ -35,13 +35,21 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
 
     // Real-time projects
-    const projectsQuery = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
+    const projectsQuery = query(collection(db, 'projects'));
     const unsubscribeProjects = onSnapshot(projectsQuery, (snapshot) => {
       const projectsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })) as VideoProject[];
-      setProjects(projectsData);
+      })) as any[];
+      
+      // Sort locally by createdAt if available
+      projectsData.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+      });
+
+      setProjects(projectsData as VideoProject[]);
       setProjectsLoading(false);
     }, (error) => {
       console.error("Projects loading error:", error);
@@ -49,13 +57,21 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
 
     // Real-time testimonials
-    const testimonialsQuery = query(collection(db, 'testimonials'), orderBy('createdAt', 'desc'));
+    const testimonialsQuery = query(collection(db, 'testimonials'));
     const unsubscribeTestimonials = onSnapshot(testimonialsQuery, (snapshot) => {
       const testimonialsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })) as Testimony[];
-      setTestimonials(testimonialsData);
+      })) as any[];
+
+      // Sort locally
+      testimonialsData.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+      });
+
+      setTestimonials(testimonialsData as Testimony[]);
       setTestimonialsLoading(false);
     }, (error) => {
       console.error("Testimonials loading error:", error);
