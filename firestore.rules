@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global catch-all deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isDarvanne() {
+      return isSignedIn() && 
+             request.auth.token.email == "darvanne.tapayan@gmail.com" && 
+             request.auth.token.email_verified == true;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['title', 'thumbnail', 'videoUrl', 'category']) &&
+             data.title is string && data.title.size() <= 100 &&
+             data.thumbnail is string && data.thumbnail.size() <= 500 &&
+             data.videoUrl is string && data.videoUrl.size() <= 500 &&
+             data.category in ['Cinematic', 'Experimental', 'Product'];
+    }
+
+    function isValidTestimony(data) {
+      return data.keys().hasAll(['name', 'content']) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.content is string && data.content.size() <= 1000;
+    }
+
+    // Projects collection
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create: if isDarvanne() && isValidProject(request.resource.data);
+      allow update: if isDarvanne() && isValidProject(request.resource.data);
+      allow delete: if isDarvanne();
+    }
+
+    // Testimonials collection
+    match /testimonials/{testimonyId} {
+      allow read: if true;
+      allow create: if isDarvanne() && isValidTestimony(request.resource.data);
+      allow update: if isDarvanne() && isValidTestimony(request.resource.data);
+      allow delete: if isDarvanne();
+    }
+  }
+}

@@ -6,8 +6,12 @@
 import { motion } from 'motion/react';
 import { Quote } from 'lucide-react';
 import { TESTIMONIALS } from '../constants';
+import { useFirebase } from '../lib/FirebaseProvider';
 
 export default function Testimonials() {
+  const { testimonials: dbTestimonials } = useFirebase();
+  const items = dbTestimonials.length > 0 ? dbTestimonials : TESTIMONIALS;
+
   return (
     <section id="testimonials" className="py-24 px-6 bg-obsidian relative overflow-hidden">
       {/* Decorative Gradients */}
@@ -20,7 +24,7 @@ export default function Testimonials() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {TESTIMONIALS.map((testimony, index) => (
+          {items.map((testimony, index) => (
             <motion.div
               key={testimony.id}
               initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
@@ -36,7 +40,7 @@ export default function Testimonials() {
 
               <div className="flex items-center gap-4">
                 <img 
-                  src={testimony.avatar} 
+                  src={testimony.avatar || 'https://i.pravatar.cc/150'} 
                   alt={testimony.name}
                   className="w-14 h-14 rounded-full border-2 border-royal-purple/30"
                   referrerPolicy="no-referrer"

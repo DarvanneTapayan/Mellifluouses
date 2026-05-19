@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Video Project",
+      "description": "An AI video project showcase",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "category": { "type": "string", "enum": ["Cinematic", "Experimental", "Product"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "thumbnail", "videoUrl", "category"]
+    },
+    "Testimony": {
+      "title": "Testimonial",
+      "description": "Feedback from clients",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "content": { "type": "string" },
+        "avatar": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "content"]
+    }
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Collection of showcase videos"
+    },
+    "/testimonials/{testimonyId}": {
+      "schema": "Testimony",
+      "description": "Collection of client feedback"
+    }
+  }
+}

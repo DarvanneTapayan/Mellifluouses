@@ -6,8 +6,14 @@
 import { motion } from 'motion/react';
 import { Play, ArrowUpRight } from 'lucide-react';
 import { VIDEO_PROJECTS } from '../constants';
+import { useFirebase } from '../lib/FirebaseProvider';
 
 export default function VideoShowcase() {
+  const { projects: dbProjects } = useFirebase();
+  
+  // Use DB projects if they exist, otherwise fallback to constants
+  const items = dbProjects.length > 0 ? dbProjects : VIDEO_PROJECTS;
+
   return (
     <section id="works" className="py-24 px-6 relative">
       <div className="max-w-7xl mx-auto">
@@ -23,7 +29,7 @@ export default function VideoShowcase() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {VIDEO_PROJECTS.map((project, index) => (
+          {items.map((project, index) => (
             <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 30 }}
@@ -44,11 +50,16 @@ export default function VideoShowcase() {
                   <div className="absolute inset-0 bg-midnight/40 group-hover:opacity-0 transition-opacity" />
                   
                   {/* Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <a 
+                    href={project.videoUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
                     <div className="w-16 h-16 rounded-full bg-royal-purple/90 flex items-center justify-center backdrop-blur-sm">
                       <Play className="w-6 h-6 text-white fill-white ml-1" />
                     </div>
-                  </div>
+                  </a>
                 </div>
               </div>
 

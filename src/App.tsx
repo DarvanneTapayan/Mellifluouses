@@ -8,8 +8,13 @@ import Hero from './components/Hero';
 import VideoShowcase from './components/VideoShowcase';
 import Testimonials from './components/Testimonials';
 import Footer from './components/Footer';
+import AdminDashboard from './components/AdminDashboard';
+import { useState } from 'react';
+import { Settings } from 'lucide-react';
 
 export default function App() {
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+
   return (
     <main className="min-h-screen selection:bg-royal-purple selection:text-white overflow-x-hidden">
       <Navbar />
@@ -34,6 +39,17 @@ export default function App() {
       </section>
 
       <Footer />
+
+      {/* Hidden Admin Trigger */}
+      <button 
+        onClick={() => setIsAdminOpen(true)}
+        className="fixed bottom-6 left-6 w-10 h-10 rounded-full glass border border-white/10 flex items-center justify-center text-white/20 hover:text-white/60 transition-colors z-40"
+        title="Admin Dashboard"
+      >
+        <Settings className="w-5 h-5" />
+      </button>
+
+      {isAdminOpen && <AdminDashboard onClose={() => setIsAdminOpen(false)} />}
     </main>
   );
 }
