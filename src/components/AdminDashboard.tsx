@@ -7,8 +7,8 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Plus, Trash2, LogIn, LogOut, Video, MessageSquare, X, HardDrive, RefreshCcw } from 'lucide-react';
 import { useFirebase } from '../lib/FirebaseProvider';
-import { signIn, signOutUser, db, getAccessToken, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { signIn, signOutUser, rtdb, getAccessToken, handleFirestoreError, OperationType } from '../lib/firebase';
+import { ref, push, set, remove } from 'firebase/database';
 
 interface DriveFile {
   id: string;
@@ -83,13 +83,15 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     if (!isAdmin) return;
     try {
-      await addDoc(collection(db, 'projects'), {
+      const projectsRef = ref(rtdb, 'projects');
+      const newProjectRef = push(projectsRef);
+      await set(newProjectRef, {
         title,
         description: desc,
         thumbnail: thumb,
         videoUrl: video,
         category: cat,
-        createdAt: serverTimestamp()
+        createdAt: Date.now()
       });
       setTitle(''); setDesc(''); setThumb(''); setVideo('');
       setDebugMsg("Last action: Project added successfully!");
@@ -106,12 +108,14 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     if (!isAdmin) return;
     try {
-      await addDoc(collection(db, 'testimonials'), {
+      const testimonialsRef = ref(rtdb, 'testimonials');
+      const newTestimonyRef = push(testimonialsRef);
+      await set(newTestimonyRef, {
         name: tName,
         role: tRole,
         content: tContent,
         avatar: tAvatar,
-        createdAt: serverTimestamp()
+        createdAt: Date.now()
       });
       setTName(''); setTRole(''); setTContent(''); setTAvatar('');
       setDebugMsg("Last action: Testimonial added successfully!");
@@ -128,7 +132,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
     if (!isAdmin) return;
     if (!window.confirm("Sure about this?")) return;
     try {
-      await deleteDoc(doc(db, coll, id));
+      await remove(ref(rtdb, `${coll}/${id}`));
       setDebugMsg(`Last action: Deleted from ${coll}`);
     } catch (err: any) {
       const errString = handleFirestoreError(err, OperationType.DELETE, `${coll}/${id}`);

@@ -5,8 +5,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { collection, onSnapshot, query, orderBy, getDoc, doc } from 'firebase/firestore';
-import { auth, db, handleFirestoreError, OperationType } from './firebase';
+import { ref, onValue, off } from 'firebase/database';
+import { auth, rtdb, handleFirestoreError, OperationType } from './firebase';
 import { VideoProject, Testimony } from '../types';
 
 interface FirebaseContextType {
@@ -36,58 +36,58 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setAuthLoading(false);
     });
 
-    // Real-time projects
-    const projectsQuery = query(collection(db, 'projects'));
-    const unsubscribeProjects = onSnapshot(projectsQuery, (snapshot) => {
-      const projectsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as any[];
-      
-      // Sort locally by createdAt if available
-      projectsData.sort((a, b) => {
-        const timeA = a.createdAt?.seconds || 0;
-        const timeB = b.createdAt?.seconds || 0;
-        return timeB - timeA;
-      });
-
-      setProjects(projectsData as VideoProject[]);
+    // Real-time projects from RTDB
+    const projectsRef = ref(rtdb, 'projects');
+    const onProjectsValue = onValue(projectsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const projectsData = Object.entries(data).map(([id, val]: [string, any]) => ({
+          id,
+          ...val
+        })) as VideoProject[];
+        
+        // Sort locally by createdAt desc
+        projectsData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        setProjects(projectsData);
+      } else {
+        setProjects([]);
+      }
       setProjectsLoading(false);
       setErrorMessage(null);
     }, (error) => {
-      console.error("Projects loading error:", error);
-      setErrorMessage(handleFirestoreError(error, OperationType.LIST, 'projects'));
+      console.error("Projects loading error (RTDB):", error);
+      setErrorMessage(`Projects: ${error.message}`);
       setProjectsLoading(false);
     });
 
-    // Real-time testimonials
-    const testimonialsQuery = query(collection(db, 'testimonials'));
-    const unsubscribeTestimonials = onSnapshot(testimonialsQuery, (snapshot) => {
-      const testimonialsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as any[];
+    // Real-time testimonials from RTDB
+    const testimonialsRef = ref(rtdb, 'testimonials');
+    const onTestimonialsValue = onValue(testimonialsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const testimonialsData = Object.entries(data).map(([id, val]: [string, any]) => ({
+          id,
+          ...val
+        })) as Testimony[];
 
-      // Sort locally
-      testimonialsData.sort((a, b) => {
-        const timeA = a.createdAt?.seconds || 0;
-        const timeB = b.createdAt?.seconds || 0;
-        return timeB - timeA;
-      });
-
-      setTestimonials(testimonialsData as Testimony[]);
+        // Sort locally
+        testimonialsData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        setTestimonials(testimonialsData);
+      } else {
+        setTestimonials([]);
+      }
       setTestimonialsLoading(false);
       setErrorMessage(null);
     }, (error) => {
-      console.error("Testimonials loading error:", error);
-      setErrorMessage(handleFirestoreError(error, OperationType.LIST, 'testimonials'));
+      console.error("Testimonials loading error (RTDB):", error);
+      setErrorMessage(`Testimonials: ${error.message}`);
       setTestimonialsLoading(false);
     });
 
     return () => {
       unsubscribeAuth();
-      unsubscribeProjects();
-      unsubscribeTestimonials();
+      off(projectsRef, 'value', onProjectsValue);
+      off(testimonialsRef, 'value', onTestimonialsValue);
     };
   }, []);
 
