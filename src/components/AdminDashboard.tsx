@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Plus, Trash2, LogIn, LogOut, Video, MessageSquare, X, HardDrive, RefreshCcw, Edit2, Sparkles } from 'lucide-react';
 import { useFirebase } from '../lib/FirebaseProvider';

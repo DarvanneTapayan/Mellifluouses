@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, SchemaType } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,19 +12,23 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Request logger helper
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+  });
+
+  // Health check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", gemini_configured: !!process.env.GEMINI_API_KEY });
+  });
+
   // Gemini Setup
-  const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY || "");
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash",
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: SchemaType.OBJECT,
-        properties: {
-          title: { type: SchemaType.STRING },
-          description: { type: SchemaType.STRING }
-        },
-        required: ["title", "description"]
+  const ai = new GoogleGenAI({ 
+    apiKey: process.env.GEMINI_API_KEY || "",
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
       }
     }
   });
@@ -43,9 +47,23 @@ async function startServer() {
 
       const fullPrompt = `Based on this explanation of a video project: "${prompt}", generate a short, catchy Title and a concise, engaging Description (max 150 characters).`;
 
-      const result = await model.generateContent(fullPrompt);
-      const text = result.response.text();
-      
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: fullPrompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              title: { type: Type.STRING },
+              description: { type: Type.STRING }
+            },
+            required: ["title", "description"]
+          }
+        }
+      });
+
+      const text = response.text;
       if (!text) {
         throw new Error("Empty response from AI");
       }
@@ -55,11 +73,6 @@ async function startServer() {
       console.error("Gemini API Error:", error);
       res.status(500).json({ error: error.message || "Failed to generate content" });
     }
-  });
-
-  // Health check
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", gemini_configured: !!process.env.GEMINI_API_KEY });
   });
 
   // Vite middleware for development
