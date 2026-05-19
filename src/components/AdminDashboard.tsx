@@ -90,8 +90,10 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
         createdAt: serverTimestamp()
       });
       setTitle(''); setDesc(''); setThumb(''); setVideo('');
-    } catch (err) {
+      alert("Project added successfully!");
+    } catch (err: any) {
       console.error(err);
+      alert("Failed to add project: " + err.message);
     }
   };
 
@@ -107,8 +109,10 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
         createdAt: serverTimestamp()
       });
       setTName(''); setTRole(''); setTContent(''); setTAvatar('');
-    } catch (err) {
+      alert("Testimonial added successfully!");
+    } catch (err: any) {
       console.error(err);
+      alert("Failed to add testimonial: " + err.message);
     }
   };
 

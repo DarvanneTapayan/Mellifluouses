@@ -4,8 +4,12 @@
  */
 
 import { Instagram, Twitter, Linkedin, Youtube, ArrowUp } from 'lucide-react';
+import { useFirebase } from '../lib/FirebaseProvider';
 
 export default function Footer() {
+  const { user, projects, testimonials } = useFirebase();
+  const isAdmin = user?.email === 'darvanne.tapayan@gmail.com';
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -47,9 +51,16 @@ export default function Footer() {
         </div>
 
         <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-white/20 text-sm italic">
-            © 2026 Mellifluouses. All rights reserved. Built with passion and AI.
-          </p>
+          <div className="flex flex-col items-center md:items-start">
+            <p className="text-white/20 text-sm italic">
+              © 2026 Mellifluouses. All rights reserved. Built with passion and AI.
+            </p>
+            {isAdmin && (
+              <p className="text-[10px] text-royal-purple/40 mt-2">
+                DB Status: {projects.length} Projects, {testimonials.length} Testimonials Loaded
+              </p>
+            )}
+          </div>
 
           <div className="flex items-center gap-6">
             {[Instagram, Twitter, Linkedin, Youtube].map((Icon, i) => (

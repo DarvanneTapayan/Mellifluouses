@@ -13,8 +13,7 @@ service cloud.firestore {
 
     function isDarvanne() {
       return isSignedIn() && 
-             request.auth.token.email == "darvanne.tapayan@gmail.com" && 
-             request.auth.token.email_verified == true;
+             request.auth.token.email == "darvanne.tapayan@gmail.com";
     }
 
     function isValidProject(data) {
