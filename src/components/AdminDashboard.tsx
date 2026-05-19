@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Plus, Trash2, LogIn, LogOut, Video, MessageSquare, X, HardDrive, RefreshCcw } from 'lucide-react';
 import { useFirebase } from '../lib/FirebaseProvider';
-import { signIn, signOutUser, db, getAccessToken } from '../lib/firebase';
+import { signIn, signOutUser, db, getAccessToken, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 
 interface DriveFile {
@@ -96,8 +96,9 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
       alert("Project added successfully!");
     } catch (err: any) {
       console.error(err);
+      const errString = handleFirestoreError(err, OperationType.CREATE, 'projects');
       setDebugMsg("Error adding project: " + err.message);
-      alert("Failed to add project: " + err.message);
+      alert("Failed to add project: " + errString);
     }
   };
 
@@ -117,8 +118,9 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
       alert("Testimonial added successfully!");
     } catch (err: any) {
       console.error(err);
+      const errString = handleFirestoreError(err, OperationType.CREATE, 'testimonials');
       setDebugMsg("Error adding testimony: " + err.message);
-      alert("Failed to add testimonial: " + err.message);
+      alert("Failed to add testimonial: " + errString);
     }
   };
 
@@ -129,7 +131,9 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
       await deleteDoc(doc(db, coll, id));
       setDebugMsg(`Last action: Deleted from ${coll}`);
     } catch (err: any) {
+      const errString = handleFirestoreError(err, OperationType.DELETE, `${coll}/${id}`);
       setDebugMsg(`Error deleting: ${err.message}`);
+      alert("Failed to delete: " + errString);
     }
   };
 

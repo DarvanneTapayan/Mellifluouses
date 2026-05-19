@@ -5,8 +5,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { collection, onSnapshot, query, orderBy, getDoc, doc } from 'firebase/firestore';
+import { auth, db, handleFirestoreError, OperationType } from './firebase';
 import { VideoProject, Testimony } from '../types';
 
 interface FirebaseContextType {
@@ -56,7 +56,7 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setErrorMessage(null);
     }, (error) => {
       console.error("Projects loading error:", error);
-      setErrorMessage(`Projects: ${error.message}`);
+      setErrorMessage(handleFirestoreError(error, OperationType.LIST, 'projects'));
       setProjectsLoading(false);
     });
 
@@ -80,7 +80,7 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setErrorMessage(null);
     }, (error) => {
       console.error("Testimonials loading error:", error);
-      setErrorMessage(`Testimonials: ${error.message}`);
+      setErrorMessage(handleFirestoreError(error, OperationType.LIST, 'testimonials'));
       setTestimonialsLoading(false);
     });
 
