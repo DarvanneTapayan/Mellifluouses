@@ -13,6 +13,9 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-midnight text-white selection:bg-royal-purple selection:text-white;
     font-feature-settings: "cv02", "cv03", "cv04";

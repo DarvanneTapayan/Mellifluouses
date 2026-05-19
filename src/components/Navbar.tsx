@@ -34,9 +34,9 @@ export default function Navbar() {
               {item}
             </a>
           ))}
-          <button className="bg-royal-purple hover:bg-electric-purple px-5 py-2 rounded-xl transition-all font-semibold purple-glow">
+          <a href="#contact" className="bg-royal-purple hover:bg-electric-purple px-5 py-2 rounded-xl transition-all font-semibold purple-glow">
             Say Hello
-          </button>
+          </a>
         </div>
 
         <button 
@@ -64,9 +64,9 @@ export default function Navbar() {
               {item}
             </a>
           ))}
-          <button className="bg-royal-purple px-5 py-3 rounded-xl font-semibold">
+          <a href="#contact" onClick={() => setIsOpen(false)} className="bg-royal-purple px-5 py-3 rounded-xl font-semibold">
             Start Project
-          </button>
+          </a>
         </motion.div>
       )}
     </motion.nav>

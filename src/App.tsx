@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import VideoShowcase from './components/VideoShowcase';
 import Testimonials from './components/Testimonials';
+import Process from './components/Process';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import { useState } from 'react';
@@ -19,8 +20,13 @@ export default function App() {
     <main className="min-h-screen selection:bg-royal-purple selection:text-white overflow-x-hidden">
       <Navbar />
       <Hero />
-      <VideoShowcase />
-      <Testimonials />
+      <div id="works">
+        <VideoShowcase />
+      </div>
+      <div id="testimonials">
+        <Testimonials />
+      </div>
+      <Process />
       
       {/* CTA Section */}
       <section id="contact" className="py-32 px-6">
@@ -31,9 +37,12 @@ export default function App() {
             <p className="text-white/60 text-xl mb-12 max-w-xl mx-auto">
               I'm always down to chat about cool projects, AI experiments, or just geek out over pixels. Let's make it happen.
             </p>
-            <button className="bg-white text-midnight px-10 py-5 rounded-2xl font-bold text-xl hover:bg-royal-purple hover:text-white transition-all purple-glow">
+            <a 
+              href="mailto:darvanne.tapayan@gmail.com" 
+              className="inline-block bg-white text-midnight px-10 py-5 rounded-2xl font-bold text-xl hover:bg-royal-purple hover:text-white transition-all purple-glow"
+            >
               Get In Touch
-            </button>
+            </a>
           </div>
         </div>
       </section>

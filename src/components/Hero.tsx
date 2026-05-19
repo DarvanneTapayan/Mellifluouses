@@ -8,7 +8,7 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -56,13 +56,13 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="flex flex-col md:flex-row items-center justify-center gap-6"
         >
-          <button className="group bg-royal-purple hover:bg-electric-purple px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 transition-all purple-glow">
+          <a href="#works" className="group bg-royal-purple hover:bg-electric-purple px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 transition-all purple-glow">
             See My Work
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
-          <button className="glass px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all">
+          </a>
+          <a href="#process" className="glass px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all">
             How I Do It
-          </button>
+          </a>
         </motion.div>
       </div>
 

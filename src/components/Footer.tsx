@@ -39,17 +39,17 @@ export default function Footer() {
             <div>
               <h5 className="font-bold text-xs uppercase tracking-widest text-white/30 mb-8">Navigation</h5>
               <ul className="flex flex-col gap-4 text-white/60">
-                <li><a href="#" className="hover:text-royal-purple transition-colors">About Me</a></li>
-                <li><a href="#" className="hover:text-royal-purple transition-colors">Showreel</a></li>
-                <li><a href="#" className="hover:text-royal-purple transition-colors">Say Hi</a></li>
+                <li><a href="#hero" className="hover:text-royal-purple transition-colors">About Me</a></li>
+                <li><a href="#works" className="hover:text-royal-purple transition-colors">Showreel</a></li>
+                <li><a href="#contact" className="hover:text-royal-purple transition-colors">Say Hi</a></li>
               </ul>
             </div>
             <div>
               <h5 className="font-bold text-xs uppercase tracking-widest text-white/30 mb-8">What I Do</h5>
               <ul className="flex flex-col gap-4 text-white/60">
-                <li><a href="#" className="hover:text-royal-purple transition-colors">AI Video</a></li>
-                <li><a href="#" className="hover:text-royal-purple transition-colors">Experiments</a></li>
-                <li><a href="#" className="hover:text-royal-purple transition-colors">Visual Art</a></li>
+                <li><a href="#works" className="hover:text-royal-purple transition-colors">AI Video</a></li>
+                <li><a href="#process" className="hover:text-royal-purple transition-colors">Experiments</a></li>
+                <li><a href="#works" className="hover:text-royal-purple transition-colors">Visual Art</a></li>
               </ul>
             </div>
           </div>
