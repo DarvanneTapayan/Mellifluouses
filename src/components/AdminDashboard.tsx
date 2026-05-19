@@ -189,6 +189,14 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
     try {
       // First check health
       const healthRes = await fetch('/api/health');
+      if (!healthRes.ok) {
+        throw new Error(`Health check failed: ${healthRes.status}`);
+      }
+      const healthContentType = healthRes.headers.get('content-type');
+      if (!healthContentType || !healthContentType.includes('application/json')) {
+        const text = await healthRes.text();
+        throw new Error(`Health check returned non-JSON: ${text.substring(0, 50)}...`);
+      }
       const healthData = await healthRes.json();
       if (!healthData.gemini_configured) {
         throw new Error("Gemini API key is missing. Please add GEMINI_API_KEY in the Secrets menu.");
